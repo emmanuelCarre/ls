@@ -1,19 +1,37 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
-	"os"
 )
 
-func main() {
-	files, err := ioutil.ReadDir("./")
-	if err != nil {
-		os.Exit(-1)
+func parseArguments() []string {
+	flag.Parse()
+	arguments := flag.Args()
+	if len(arguments) == 0 {
+		arguments = []string{"./"}
 	}
+	return arguments
+}
 
-	for _, f := range files {
-		fmt.Println(f.Name())
+func ls(file string) int {
+	files, err := ioutil.ReadDir(file)
+	if err != nil {
+		return -1
 	}
-	os.Exit(0)
+	for _, f := range files {
+		fileName := f.Name()
+		if fileName[0] != '.' {
+			fmt.Println(fileName)
+		}
+	}
+	return 0
+}
+
+func main() {
+	arguments := parseArguments()
+	for _, file := range arguments {
+		ls(file)
+	}
 }
