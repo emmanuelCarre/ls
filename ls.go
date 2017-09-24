@@ -6,23 +6,31 @@ import (
 	"io/ioutil"
 )
 
-func parseArguments() []string {
-	flag.Parse()
-	arguments := flag.Args()
-	if len(arguments) == 0 {
-		arguments = []string{"./"}
-	}
-	return arguments
+type options struct {
+	all  *bool
+	path []string
 }
 
-func ls(file string) int {
+func parseArguments() options {
+	initialBool := true
+	options := options{&initialBool, nil}
+	options.all = flag.Bool("a", false, "do not ignore entries starting with .")
+	flag.Parse()
+	options.path = flag.Args()
+	if len(options.path) == 0 {
+		options.path = []string{"./"}
+	}
+	return options
+}
+
+func ls(options options, file string) int {
 	files, err := ioutil.ReadDir(file)
 	if err != nil {
 		return -1
 	}
 	for _, f := range files {
 		fileName := f.Name()
-		if fileName[0] != '.' {
+		if !(fileName[0] == '.' && !*options.all) {
 			fmt.Println(fileName)
 		}
 	}
@@ -30,8 +38,8 @@ func ls(file string) int {
 }
 
 func main() {
-	arguments := parseArguments()
-	for _, file := range arguments {
-		ls(file)
+	options := parseArguments()
+	for _, file := range options.path {
+		ls(options, file)
 	}
 }
